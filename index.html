@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Little Health">
+  <title>Little Health — Child Medical Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#FDF8F3;--card:#FFFFFF;--primary:#E8907F;--primary-light:#FAEAE7;
+      --secondary:#7BAAA0;--secondary-light:#D0E8E4;--accent:#F0C27A;--accent-light:#FDF0D8;
+      --lavender:#B8A8D8;--lavender-light:#EBE6F8;--mint:#82C4A8;--mint-light:#D4F0E4;
+      --sky:#80B8D8;--sky-light:#D8EEF8;--text:#2A2220;--text-mid:#6A5A55;
+      --text-light:#A89088;--border:#EDE3DC;--shadow:rgba(120,60,40,0.07);
+      --radius:18px;--radius-sm:12px;--tab-h:68px;
+      --safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html{height:-webkit-fill-available}
+    body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;min-height:-webkit-fill-available;max-width:430px;margin:0 auto;overflow-x:hidden}
+    @media(min-width:500px){body{box-shadow:0 0 80px rgba(0,0,0,.1);border-left:1px solid var(--border);border-right:1px solid var(--border)}html{background:#F0EAE3}}
+    .header{position:sticky;top:0;z-index:100;padding:calc(var(--safe-t) + 14px) 20px 14px;background:rgba(253,248,243,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .header-logo{display:flex;align-items:center;gap:9px}
+    .header-mark{width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(232,144,127,.35);flex-shrink:0}
+    .header-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;letter-spacing:-.3px}
+    .header-tagline{font-size:10px;color:var(--text-light);letter-spacing:.4px;text-transform:uppercase;margin-top:1px}
+    .header-actions{display:flex;gap:8px}
+    .hbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px var(--shadow);color:var(--text-mid);transition:transform .15s}
+    .hbtn:active{transform:scale(.9)}
+    .hbtn svg{width:18px;height:18px}
+    .main{padding-bottom:calc(var(--tab-h) + var(--safe-b) + 20px)}
+    .view{display:none}
+    .view.active{display:block;animation:fadeSlide .22s ease both}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .hero{margin:18px 18px 0;background:linear-gradient(130deg,var(--primary) 0%,#D4706A 55%,#C4607A 100%);border-radius:22px;padding:22px 22px 20px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 30px rgba(200,80,80,.25)}
+    .hero::before{content:'';position:absolute;right:-28px;top:-28px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.10)}
+    .hero-emoji{font-size:36px;margin-bottom:4px;display:block}
+    .hero-name{font-family:'Fraunces',serif;font-size:30px;font-weight:600;letter-spacing:-.5px;line-height:1}
+    .hero-meta{font-size:13px;opacity:.8;margin-top:5px}
+    .hero-stats{display:flex;margin-top:18px;background:rgba(255,255,255,.15);border-radius:14px;overflow:hidden}
+    .hero-stat{flex:1;padding:10px 8px;text-align:center}
+    .hero-stat:not(:last-child){border-right:1px solid rgba(255,255,255,.2)}
+    .hero-stat-val{font-size:22px;font-weight:700}
+    .hero-stat-lbl{font-size:10px;opacity:.75;margin-top:1px}
+    .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 18px}
+    .qitem{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px 11px;background:var(--card);border-radius:14px;border:1.5px solid var(--border);cursor:pointer;box-shadow:0 2px 8px var(--shadow);transition:transform .15s,box-shadow .15s}
+    .qitem:active{transform:scale(.93);box-shadow:0 1px 4px var(--shadow)}
+    .qitem-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center}
+    .qitem-icon svg{width:100%;height:100%}
+    .qitem-lbl{font-size:10px;font-weight:500;color:var(--text-mid);text-align:center;line-height:1.2}
+    .section{padding:18px 18px 4px}
+    .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .section-title{font-family:'Fraunces',serif;font-size:19px;font-weight:600;letter-spacing:-.2px}
+    .add-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--primary);color:white;border:none;border-radius:20px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(232,144,127,.3);transition:transform .15s}
+    .add-btn:active{transform:scale(.95)}
+    .card{background:var(--card);border-radius:var(--radius);padding:15px;border:1.5px solid var(--border);box-shadow:0 2px 10px var(--shadow);margin-bottom:10px}
+    .card-row{display:flex;align-items:flex-start;gap:12px}
+    .card-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--card);border:1.5px solid var(--border);padding:5px;box-shadow:0 2px 6px var(--shadow)}
+    .card-icon svg{width:100%;height:100%}
+    .card-body{flex:1;min-width:0}
+    .card-title{font-weight:600;font-size:14px;line-height:1.3}
+    .card-date{font-size:11px;color:var(--text-light);margin-top:3px}
+    .card-note{font-size:12.5px;color:var(--text-mid);margin-top:6px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .card-del{background:none;border:none;cursor:pointer;color:var(--text-light);font-size:20px;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s}
+    .card-del:active{background:#FEE;color:#C03}
+    .divider{height:1px;background:var(--border);margin:2px 18px 0}
+    .timeline{padding:4px 18px 0}
+    .tl-item{display:flex;gap:13px;padding-bottom:18px;position:relative}
+    .tl-item:not(:last-child)::before{content:'';position:absolute;left:19px;top:40px;bottom:0;width:2px;background:var(--border)}
+    .tl-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--card);border:1.5px solid var(--border);padding:6px;box-shadow:0 2px 8px var(--shadow)}
+    .tl-dot svg{width:100%;height:100%}
+    .tl-body{flex:1;padding-top:7px}
+    .tl-title{font-weight:600;font-size:13.5px}
+    .tl-cat{font-size:10.5px;color:var(--text-light);margin-top:2px}
+    .empty{text-align:center;padding:32px 20px 20px}
+    .empty-icon{width:48px;height:48px;margin:0 auto 10px;opacity:.4}
+    .empty-icon svg{width:100%;height:100%}
+    .empty-txt{font-size:13px;color:var(--text-light);line-height:1.6}
+    .tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(253,248,243,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;padding-bottom:var(--safe-b);z-index:200}
+    .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;cursor:pointer;gap:3px;color:var(--text-light);transition:transform .14s}
+    .tab:active{transform:scale(.88)}
+    .tab-icon{width:24px;height:24px}
+    .tab-icon svg{width:100%;height:100%}
+    .tab-lbl{font-size:9.5px;font-weight:500;letter-spacing:.1px}
+    .tab.active{color:var(--primary)}
+    .tab.active .tab-lbl{font-weight:700}
+    .overlay{position:fixed;inset:0;background:rgba(30,15,10,.4);z-index:300;display:none;align-items:flex-end}
+    .overlay.open{display:flex;animation:overlayIn .2s ease both}
+    @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+    .sheet{width:100%;background:var(--bg);border-radius:26px 26px 0 0;padding:12px 20px calc(24px + var(--safe-b));max-height:90dvh;overflow-y:auto;animation:sheetUp .28s cubic-bezier(.34,1.2,.64,1) both}
+    @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .sheet-handle{width:40px;height:5px;background:var(--border);border-radius:3px;margin:0 auto 18px}
+    .sheet-title{font-family:'Fraunces',serif;font-size:21px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+    .sheet-icon{width:30px;height:30px;flex-shrink:0}
+    .sheet-icon svg{width:100%;height:100%}
+    .fg{margin-bottom:15px}
+    .fg label{display:block;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+    .fg input,.fg textarea,.fg select{width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;font-family:'DM Sans',sans-serif;background:var(--card);color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s;-webkit-appearance:none}
+    .fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+    .fg textarea{min-height:88px;resize:vertical;line-height:1.55}
+    .fg-row{display:flex;gap:10px}
+    .fg-row .fg{flex:1}
+    .submit-btn{width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:var(--radius);font-size:16px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:6px;box-shadow:0 5px 18px rgba(232,144,127,.38);transition:transform .14s}
+    .submit-btn:active{transform:scale(.98)}
+    .scard{background:var(--card);border-radius:var(--radius);padding:18px;border:1.5px solid var(--border);box-shadow:0 2px 10px var(--shadow);margin-bottom:14px}
+    .privacy-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--mint-light);border-radius:20px;font-size:11px;font-weight:600;color:#3A8060;border:1px solid var(--mint);margin-bottom:12px}
+    .action-row{display:flex;gap:10px;margin-top:2px}
+    .action-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:transform .14s,border-color .14s;box-shadow:0 2px 8px var(--shadow)}
+    .action-btn:active{transform:scale(.96);border-color:var(--primary)}
+    .action-btn svg{width:28px;height:28px}
+    .action-btn small{font-weight:400;opacity:.65;font-size:10px}
+    .danger-btn{width:100%;padding:14px;background:#FEF0EE;border:1.5px solid #F8CCCC;border-radius:var(--radius-sm);color:#C03030;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:transform .14s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .danger-btn:active{transform:scale(.98)}
+    .helper{font-size:13px;color:var(--text-mid);line-height:1.65}
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <div class="header-mark">
+      <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 3C9 3 6 5 6 9c0 3 2 5 4 7l2 2 2-2c2-2 4-4 4-7 0-4-3-6-6-6z" fill="rgba(255,255,255,0.3)" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9" r="2" fill="white"/></svg>
+    </div>
+    <div>
+      <div class="header-title">Little Health</div>
+      <div class="header-tagline">Private · Local · Yours</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn" onclick="openExportSheet()" title="Backup & Sync">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- HOME -->
+  <div class="view active" id="view-home">
+    <div class="hero">
+      <span class="hero-emoji" id="hero-emoji">👶</span>
+      <div class="hero-name" id="hero-name">Your Child</div>
+      <div class="hero-meta" id="hero-meta">Set up profile in Settings →</div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-val" id="stat-visits">0</div><div class="hero-stat-lbl">Visits</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="stat-vaccines">0</div><div class="hero-stat-lbl">Vaccines</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="stat-meds">0</div><div class="hero-stat-lbl">Meds</div></div>
+        <div class="hero-stat"><div class="hero-stat-val" id="stat-milestones">0</div><div class="hero-stat-lbl">Milestones</div></div>
+      </div>
+    </div>
+    <div class="quick-grid" id="quick-grid"></div>
+    <div class="section">
+      <div class="section-hd"><div class="section-title">Recent Activity</div></div>
+      <div id="recent-list"></div>
+    </div>
+  </div>
+
+  <!-- HEALTH -->
+  <div class="view" id="view-health">
+    <div class="section"><div class="section-hd"><div class="section-title">Doctor Visits</div><button class="add-btn" onclick="openAdd('visits')">+ Add</button></div><div id="list-visits"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Immunizations</div><button class="add-btn" onclick="openAdd('immunizations')">+ Add</button></div><div id="list-immunizations"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Illnesses</div><button class="add-btn" onclick="openAdd('illnesses')">+ Add</button></div><div id="list-illnesses"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Medications</div><button class="add-btn" onclick="openAdd('medications')">+ Add</button></div><div id="list-medications"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Symptoms &amp; Treatments</div><button class="add-btn" onclick="openAdd('symptoms')">+ Add</button></div><div id="list-symptoms"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Allergies</div><button class="add-btn" onclick="openAdd('allergies')">+ Add</button></div><div id="list-allergies"></div></div>
+  </div>
+
+  <!-- GROWTH -->
+  <div class="view" id="view-growth">
+    <div class="section"><div class="section-hd"><div class="section-title">Growth Records</div><button class="add-btn" onclick="openAdd('growth')">+ Add</button></div><div id="list-growth"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Milestones</div><button class="add-btn" onclick="openAdd('milestones')">+ Add</button></div><div id="list-milestones"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Feeding &amp; Food</div><button class="add-btn" onclick="openAdd('feeding')">+ Add</button></div><div id="list-feeding"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Sleep Logs</div><button class="add-btn" onclick="openAdd('sleep')">+ Add</button></div><div id="list-sleep"></div></div>
+  </div>
+
+  <!-- RECORDS -->
+  <div class="view" id="view-records">
+    <div class="section"><div class="section-hd"><div class="section-title">Specialist Referrals</div><button class="add-btn" onclick="openAdd('referrals')">+ Add</button></div><div id="list-referrals"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Recommendations</div><button class="add-btn" onclick="openAdd('recommendations')">+ Add</button></div><div id="list-recommendations"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Insurance</div><button class="add-btn" onclick="openAdd('insurance')">+ Add</button></div><div id="list-insurance"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Medical Bills</div><button class="add-btn" onclick="openAdd('bills')">+ Add</button></div><div id="list-bills"></div></div>
+    <div class="divider"></div>
+    <div class="section"><div class="section-hd"><div class="section-title">Emergency Info</div><button class="add-btn" onclick="openAdd('emergency')">+ Add</button></div><div id="list-emergency"></div></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="view" id="view-settings">
+    <div class="section">
+      <div class="section-hd"><div class="section-title">Child Profile</div></div>
+      <div class="scard">
+        <div class="fg"><label>Child's Name</label><input id="s-name" placeholder="e.g. Emma" oninput="saveProfile()"></div>
+        <div class="fg-row">
+          <div class="fg"><label>Date of Birth</label><input type="date" id="s-dob" oninput="saveProfile()"></div>
+          <div class="fg"><label>Blood Type</label><select id="s-blood" onchange="saveProfile()"><option value="">Unknown</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+        </div>
+        <div class="fg"><label>Pediatrician</label><input id="s-peds" placeholder="Dr. Name, Practice name" oninput="saveProfile()"></div>
+        <div class="fg"><label>Hospital Preference</label><input id="s-hospital" placeholder="Children's Hospital, etc." oninput="saveProfile()"></div>
+      </div>
+
+      <div class="section-hd" style="margin-top:8px"><div class="section-title">Backup &amp; Sync</div></div>
+      <div class="scard">
+        <div class="privacy-chip">🔒 100% Local — Nothing ever leaves this device</div>
+        <p class="helper" style="margin-bottom:16px">Export saves a file directly to your device. Import merges entries from another device's export — new entries are added, nothing is overwritten. Use this to sync between Mac and iPhone.</p>
+        <div class="action-row">
+          <button class="action-btn" onclick="exportJSON()">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" fill="#D0E8E4" stroke="#2A2220" stroke-width="1.5"/><path d="M16 3L20 7L16 7Z" fill="#7BAAA0" stroke="#2A2220" stroke-width="1"/><line x1="8" y1="11" x2="16" y2="11" stroke="#2A2220" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/><line x1="8" y1="14" x2="13" y2="14" stroke="#2A2220" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/><circle cx="3" cy="6" r="1.2" fill="#E8907F"/><circle cx="21" cy="18" r="1" fill="#F0C27A"/></svg>
+            Full Backup<small>JSON export</small>
+          </button>
+          <button class="action-btn" onclick="exportCSV()">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" fill="#FDF0D8" stroke="#2A2220" stroke-width="1.5"/><line x1="3" y1="8" x2="21" y2="8" stroke="#2A2220" stroke-width="1.2"/><line x1="3" y1="13" x2="21" y2="13" stroke="#2A2220" stroke-width="1.2"/><line x1="9" y1="8" x2="9" y2="21" stroke="#2A2220" stroke-width="1.2"/><circle cx="2" cy="5" r="1.2" fill="#E8907F"/><circle cx="22" cy="16" r="1" fill="#7BAAA0"/></svg>
+            Spreadsheet<small>CSV export</small>
+          </button>
+          <button class="action-btn" onclick="triggerImport()">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" fill="#D8EEF8" stroke="#2A2220" stroke-width="1.5"/><path d="M12 8L12 16M9 13L12 16L15 13" stroke="#80B8D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="2" cy="8" r="1.2" fill="#E8907F"/><circle cx="22" cy="8" r="1" fill="#F0C27A"/><circle cx="22" cy="19" r="1" fill="#7BAAA0"/></svg>
+            Import<small>Merge JSON</small>
+          </button>
+        </div>
+        <input type="file" id="import-input" accept=".json" style="display:none" onchange="handleImport(event)">
+      </div>
+
+      <div class="section-hd" style="margin-top:8px"><div class="section-title">Add to Home Screen</div></div>
+      <div class="scard">
+        <p class="helper"><strong>iPhone / iPad:</strong> Open in Safari → tap <strong>Share (↑)</strong> → <strong>"Add to Home Screen"</strong><br><br><strong>Mac (Safari):</strong> File → <strong>"Add to Dock"</strong> (macOS Sonoma+)</p>
+      </div>
+
+      <div class="section-hd" style="margin-top:8px"><div class="section-title">Data Management</div></div>
+      <div class="scard">
+        <p class="helper" style="margin-bottom:14px">Export a backup before clearing. This permanently deletes all entries.</p>
+        <button class="danger-btn" onclick="clearAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          Clear All Data
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<nav class="tabbar">
+  <div class="tab active" id="tab-home" onclick="goTab('home')">
+    <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H15v-5H9v5H4a1 1 0 01-1-1z"/></svg></div>
+    <div class="tab-lbl">Home</div>
+  </div>
+  <div class="tab" id="tab-health" onclick="goTab('health')">
+    <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 000-7.8z"/></svg></div>
+    <div class="tab-lbl">Health</div>
+  </div>
+  <div class="tab" id="tab-growth" onclick="goTab('growth')">
+    <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V13"/><path d="M12 13C12 8 6 6 4 9"/><path d="M12 13C12 8 18 6 20 9"/><path d="M12 17.5C12 15 9 13.5 7 15"/></svg></div>
+    <div class="tab-lbl">Growth</div>
+  </div>
+  <div class="tab" id="tab-records" onclick="goTab('records')">
+    <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+    <div class="tab-lbl">Records</div>
+  </div>
+  <div class="tab" id="tab-settings" onclick="goTab('settings')">
+    <div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg></div>
+    <div class="tab-lbl">Settings</div>
+  </div>
+</nav>
+
+<!-- ADD SHEET -->
+<div class="overlay" id="add-overlay" onclick="closeOverlay(event,'add-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheet-title">Add Entry</div>
+    <div id="sheet-body"></div>
+  </div>
+</div>
+
+<!-- EXPORT/IMPORT SHEET -->
+<div class="overlay" id="export-overlay" onclick="closeOverlay(event,'export-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Backup &amp; Sync</div>
+    <div class="privacy-chip">🔒 Stays on your device — always</div>
+    <p class="helper" style="margin:10px 0 20px">Export generates a file that downloads directly to your device. Import merges entries from another device — nothing is overwritten, only new entries are added.</p>
+    <div class="action-row">
+      <button class="action-btn" onclick="exportJSON()">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" fill="#D0E8E4" stroke="#2A2220" stroke-width="1.5"/><path d="M16 3L20 7L16 7Z" fill="#7BAAA0" stroke="#2A2220" stroke-width="1"/><line x1="8" y1="11" x2="16" y2="11" stroke="#2A2220" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/><line x1="8" y1="14" x2="13" y2="14" stroke="#2A2220" stroke-width="1.2" opacity="0.5" stroke-linecap="round"/><circle cx="3" cy="6" r="1.2" fill="#E8907F"/><circle cx="21" cy="18" r="1" fill="#F0C27A"/></svg>
+        JSON Backup<small>Full export</small>
+      </button>
+      <button class="action-btn" onclick="exportCSV()">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" fill="#FDF0D8" stroke="#2A2220" stroke-width="1.5"/><line x1="3" y1="8" x2="21" y2="8" stroke="#2A2220" stroke-width="1.2"/><line x1="3" y1="13" x2="21" y2="13" stroke="#2A2220" stroke-width="1.2"/><line x1="9" y1="8" x2="9" y2="21" stroke="#2A2220" stroke-width="1.2"/><circle cx="2" cy="5" r="1.2" fill="#E8907F"/><circle cx="22" cy="16" r="1" fill="#7BAAA0"/></svg>
+        Spreadsheet<small>CSV export</small>
+      </button>
+      <button class="action-btn" onclick="triggerImport()">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" fill="#D8EEF8" stroke="#2A2220" stroke-width="1.5"/><path d="M12 8L12 16M9 13L12 16L15 13" stroke="#80B8D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="2" cy="8" r="1.2" fill="#E8907F"/><circle cx="22" cy="8" r="1" fill="#F0C27A"/></svg>
+        Import<small>Merge JSON</small>
+      </button>
+    </div>
+    <input type="file" id="import-input2" accept=".json" style="display:none" onchange="handleImport(event)">
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  ICONOGRAPHY-STYLE SVG ICONS
+//  Filled shapes · dark outlines · accent dots
+// ══════════════════════════════════════════
+const ICONS = {
+
+visits:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="7" cy="5.5" r="1.8" fill="#E8907F" stroke="#2A2220" stroke-width="1.2"/>
+<circle cx="17" cy="5.5" r="1.8" fill="#E8907F" stroke="#2A2220" stroke-width="1.2"/>
+<path d="M7 7.3L7 11Q7 15.2 12 15.2Q17 15.2 17 11L17 7.3" stroke="#2A2220" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="12" y1="15.2" x2="12" y2="17.8" stroke="#2A2220" stroke-width="1.5" stroke-linecap="round"/>
+<circle cx="12" cy="20.3" r="2.5" fill="#FAEAE7" stroke="#2A2220" stroke-width="1.5"/>
+<circle cx="12" cy="20.3" r="1" fill="#E8907F"/>
+<circle cx="3" cy="12" r="1.2" fill="#7BAAA0"/>
+<circle cx="21" cy="8" r="1" fill="#F0C27A"/>
+<circle cx="20.5" cy="20" r="0.9" fill="#7BAAA0"/>
+</svg>`,
+
+immunizations:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<line x1="3" y1="9.8" x2="3" y2="14.2" stroke="#2A2220" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="3" y1="12" x2="5.2" y2="12" stroke="#2A2220" stroke-width="1.6" stroke-linecap="round"/>
+<rect x="5.2" y="9.5" width="12" height="5" rx="2.5" fill="#D0E8E4" stroke="#2A2220" stroke-width="1.5"/>
+<rect x="6.2" y="10.5" width="5" height="3" rx="1.5" fill="#7BAAA0"/>
+<line x1="9.2" y1="9.5" x2="9.2" y2="8.3" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round"/>
+<line x1="12.2" y1="9.5" x2="12.2" y2="8.3" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round"/>
+<line x1="15.2" y1="9.5" x2="15.2" y2="8.3" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round"/>
+<rect x="17.2" y="10.2" width="2.2" height="3.6" rx="0.6" fill="#FDF0D8" stroke="#2A2220" stroke-width="1.2"/>
+<line x1="19.4" y1="12" x2="22.5" y2="12" stroke="#2A2220" stroke-width="1.4" stroke-linecap="round"/>
+<circle cx="4" cy="4.5" r="1.2" fill="#E8907F"/>
+<circle cx="20" cy="5" r="1" fill="#F0C27A"/>
+<circle cx="3" cy="19.5" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+illnesses:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="8.5" fill="#FAEAE7" stroke="#2A2220" stroke-width="1.5"/>
+<path d="M8.5 9.2Q9 8.2 9.5 9.2" stroke="#2A2220" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<path d="M14.5 9.2Q15 8.2 15.5 9.2" stroke="#2A2220" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<path d="M8.5 15Q10.5 12.8 12 14.3Q13.5 15.8 15.5 13.8" stroke="#2A2220" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<ellipse cx="7.5" cy="13" rx="2.5" ry="1.8" fill="#E8907F" opacity="0.35"/>
+<ellipse cx="16.5" cy="13" rx="2.5" ry="1.8" fill="#E8907F" opacity="0.35"/>
+<circle cx="2" cy="5" r="1.2" fill="#7BAAA0"/>
+<circle cx="22" cy="6" r="1" fill="#F0C27A"/>
+<circle cx="21" cy="19" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+medications:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 9.5L12 9.5L12 14.5L7 14.5A2.5 2.5 0 0 1 7 9.5Z" fill="#FAEAE7"/>
+<path d="M12 9.5L17 9.5A2.5 2.5 0 0 1 17 14.5L12 14.5Z" fill="#EBE6F8"/>
+<path d="M7 9.5L17 9.5A2.5 2.5 0 0 1 17 14.5L7 14.5A2.5 2.5 0 0 1 7 9.5Z" fill="none" stroke="#2A2220" stroke-width="1.5"/>
+<line x1="12" y1="9.5" x2="12" y2="14.5" stroke="#2A2220" stroke-width="1.3"/>
+<circle cx="3" cy="5" r="1.2" fill="#E8907F"/>
+<circle cx="21" cy="5" r="1" fill="#7BAAA0"/>
+<circle cx="12" cy="20.5" r="1.3" fill="#F0C27A"/>
+</svg>`,
+
+symptoms:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="3" width="4" height="14" rx="2" fill="#FFF5F5" stroke="#2A2220" stroke-width="1.5"/>
+<rect x="10.5" y="10" width="3" height="7" rx="1.5" fill="#E8907F" opacity="0.85"/>
+<circle cx="12" cy="18.5" r="3.2" fill="#FAEAE7" stroke="#2A2220" stroke-width="1.5"/>
+<circle cx="12" cy="18.5" r="1.8" fill="#E8907F"/>
+<line x1="14" y1="5.5" x2="16.5" y2="5.5" stroke="#2A2220" stroke-width="1" stroke-linecap="round"/>
+<line x1="14" y1="8.5" x2="15.5" y2="8.5" stroke="#2A2220" stroke-width="1" stroke-linecap="round"/>
+<line x1="14" y1="11.5" x2="16.5" y2="11.5" stroke="#2A2220" stroke-width="1" stroke-linecap="round"/>
+<circle cx="4" cy="6" r="1.2" fill="#7BAAA0"/>
+<circle cx="20" cy="5.5" r="1" fill="#F0C27A"/>
+<circle cx="4" cy="18" r="1" fill="#E8907F"/>
+</svg>`,
+
+allergies:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2.5L20 6L20 12.5Q20 19 12 22Q4 19 4 12.5L4 6Z" fill="#FAEAE7" stroke="#2A2220" stroke-width="1.5" stroke-linejoin="round"/>
+<line x1="12" y1="8" x2="12" y2="14.5" stroke="#E8907F" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="12" cy="17.5" r="1.5" fill="#E8907F"/>
+<circle cx="2" cy="4" r="1.2" fill="#7BAAA0"/>
+<circle cx="22" cy="4" r="1" fill="#F0C27A"/>
+<circle cx="2" cy="20" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+growth:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="2" y="8.5" width="20" height="8.5" rx="2" fill="#D0E8E4" stroke="#2A2220" stroke-width="1.5"/>
+<line x1="5.5" y1="8.5" x2="5.5" y2="12.5" stroke="#2A2220" stroke-width="1.3" stroke-linecap="round"/>
+<line x1="9" y1="8.5" x2="9" y2="11" stroke="#2A2220" stroke-width="1.3" stroke-linecap="round"/>
+<line x1="12.5" y1="8.5" x2="12.5" y2="12.5" stroke="#2A2220" stroke-width="1.3" stroke-linecap="round"/>
+<line x1="16" y1="8.5" x2="16" y2="11" stroke="#2A2220" stroke-width="1.3" stroke-linecap="round"/>
+<line x1="19.5" y1="8.5" x2="19.5" y2="12.5" stroke="#2A2220" stroke-width="1.3" stroke-linecap="round"/>
+<path d="M7 5.5L5 5.5L5 7.5" stroke="#7BAAA0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="3" cy="4" r="1" fill="#E8907F"/>
+<circle cx="21" cy="5.5" r="1.2" fill="#F0C27A"/>
+<circle cx="21" cy="20" r="1" fill="#E8907F"/>
+</svg>`,
+
+milestones:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 3.5L14.1 9.2L20.1 9.4L15.3 13.1L17 18.9L12 15.5L7 18.9L8.7 13.1L3.9 9.4L9.9 9.2Z" fill="#FDF0D8" stroke="#2A2220" stroke-width="1.5" stroke-linejoin="round"/>
+<circle cx="2" cy="5" r="1.2" fill="#F0C27A"/>
+<circle cx="22" cy="5" r="1" fill="#E8907F"/>
+<circle cx="12" cy="22" r="1.3" fill="#7BAAA0"/>
+</svg>`,
+
+feeding:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.5 5Q12 2.5 14.5 5" stroke="#2A2220" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+<rect x="9.5" y="5" width="5" height="3.5" rx="0.5" fill="#D4F0E4" stroke="#2A2220" stroke-width="1.4"/>
+<rect x="7.5" y="8.5" width="9" height="12" rx="3.5" fill="#D4F0E4" stroke="#2A2220" stroke-width="1.5"/>
+<line x1="8.5" y1="16.5" x2="15.5" y2="16.5" stroke="#82C4A8" stroke-width="1.3" stroke-linecap="round"/>
+<rect x="8.5" y="17" width="7" height="2.5" rx="1.8" fill="#82C4A8" opacity="0.5"/>
+<circle cx="3" cy="8.5" r="1.2" fill="#E8907F"/>
+<circle cx="21" cy="8.5" r="1" fill="#F0C27A"/>
+<circle cx="3.5" cy="18" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+sleep:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 4C19 4 22 8 22 12C22 16 19 20 12 20C16 17 16 7 12 4Z" fill="#EBE6F8" stroke="#2A2220" stroke-width="1.5" stroke-linejoin="round"/>
+<circle cx="5.5" cy="7.5" r="2" fill="#F0C27A" stroke="#2A2220" stroke-width="1"/>
+<circle cx="4.5" cy="16.5" r="1.3" fill="#F0C27A" stroke="#2A2220" stroke-width="0.8"/>
+<circle cx="2" cy="12" r="1" fill="#B8A8D8"/>
+<circle cx="22" cy="5" r="1.2" fill="#B8A8D8"/>
+<circle cx="22" cy="19" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+referrals:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="4" y="5" width="16" height="17" rx="2" fill="#D8EEF8" stroke="#2A2220" stroke-width="1.5"/>
+<rect x="9" y="3" width="6" height="4" rx="2" fill="#FFFFFF" stroke="#2A2220" stroke-width="1.4"/>
+<line x1="7" y1="11" x2="17" y2="11" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+<line x1="7" y1="14.5" x2="13" y2="14.5" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+<path d="M13.5 17.5L17 17.5M15.5 16L17 17.5L15.5 19" stroke="#80B8D8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="2" cy="8" r="1.2" fill="#E8907F"/>
+<circle cx="22" cy="8" r="1" fill="#F0C27A"/>
+<circle cx="22" cy="20" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+recommendations:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="4" y="3" width="16" height="18" rx="2" fill="#D0E8E4" stroke="#2A2220" stroke-width="1.5"/>
+<path d="M16 3L20 7L16 7Z" fill="#7BAAA0" stroke="#2A2220" stroke-width="1"/>
+<path d="M7.5 9.5L9 11L11.5 8" stroke="#7BAAA0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="13" y1="9.5" x2="17" y2="9.5" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+<path d="M7.5 13.5L9 15L11.5 12" stroke="#7BAAA0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="13" y1="13.5" x2="16" y2="13.5" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+<circle cx="9" cy="18" r="1.5" fill="none" stroke="#2A2220" stroke-width="1.2" opacity="0.5"/>
+<line x1="12" y1="18" x2="16" y2="18" stroke="#2A2220" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+<circle cx="2" cy="6" r="1.2" fill="#E8907F"/>
+<circle cx="22" cy="19" r="1" fill="#F0C27A"/>
+</svg>`,
+
+insurance:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2L20.5 5.5L20.5 12.5Q20.5 19 12 22.5Q3.5 19 3.5 12.5L3.5 5.5Z" fill="#D8EEF8" stroke="#2A2220" stroke-width="1.5" stroke-linejoin="round"/>
+<rect x="10.5" y="8" width="3" height="9" rx="1.5" fill="#80B8D8" stroke="#2A2220" stroke-width="1"/>
+<rect x="7.5" y="10.5" width="9" height="3" rx="1.5" fill="#80B8D8" stroke="#2A2220" stroke-width="1"/>
+<circle cx="2" cy="5" r="1" fill="#7BAAA0"/>
+<circle cx="22" cy="5" r="1.2" fill="#F0C27A"/>
+<circle cx="2" cy="20" r="1" fill="#E8907F"/>
+</svg>`,
+
+bills:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="5" y="2" width="14" height="17.5" rx="2" fill="#FDF0D8" stroke="#2A2220" stroke-width="1.5"/>
+<rect x="5" y="18" width="14" height="2" fill="#FDF0D8"/>
+<path d="M5 19.5Q6.5 21.5 8 19.5Q9.5 21.5 11 19.5Q12.5 21.5 14 19.5Q15.5 21.5 17 19.5Q18.5 21.5 19 19.5" stroke="#2A2220" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<path d="M12 6.5L12 7.5M12 14.5L12 15.5M10.5 8.5Q10 7.5 12 7.5Q14 7.5 14 9Q14 10.5 12 10.5Q10 10.5 10 12Q10 13.5 12 13.5Q14 13.5 14 14.5" stroke="#C4905A" stroke-width="1.4" stroke-linecap="round"/>
+<circle cx="2" cy="5" r="1.2" fill="#E8907F"/>
+<circle cx="22" cy="5" r="1" fill="#7BAAA0"/>
+<circle cx="22" cy="16" r="1" fill="#7BAAA0"/>
+</svg>`,
+
+emergency:`<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="9.5" fill="#FAEAE7" stroke="#2A2220" stroke-width="1.5"/>
+<rect x="10" y="5.5" width="4" height="13" rx="2" fill="#E8907F" stroke="#2A2220" stroke-width="1.2"/>
+<rect x="5.5" y="10" width="13" height="4" rx="2" fill="#E8907F" stroke="#2A2220" stroke-width="1.2"/>
+<circle cx="2" cy="5" r="1.2" fill="#7BAAA0"/>
+<circle cx="22" cy="5" r="1" fill="#F0C27A"/>
+<circle cx="2" cy="19" r="1" fill="#F0C27A"/>
+</svg>`
+
+};
+
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+const KEY='littlehealth_v2';
+function loadData(){try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch{return fresh()}}
+function fresh(){return{profile:{name:'',dob:'',blood:'',peds:'',hospital:''},visits:[],immunizations:[],illnesses:[],medications:[],symptoms:[],allergies:[],growth:[],milestones:[],feeding:[],sleep:[],referrals:[],recommendations:[],insurance:[],bills:[],emergency:[]}}
+function save(){localStorage.setItem(KEY,JSON.stringify(D))}
+let D=loadData();
+
+// ══════════════════════════════════════════
+//  CATEGORY CONFIG
+// ══════════════════════════════════════════
+const C={
+  visits:{label:'Doctor Visit',fields:[{k:'date',l:'Date',t:'date',req:true},{k:'doctor',l:'Doctor / Provider',t:'text',ph:'Dr. Smith, Pediatrics'},{k:'reason',l:'Reason for Visit',t:'text',ph:'Well visit, fever, ear check…'},{k:'diagnosis',l:'Diagnosis',t:'text',ph:'Diagnosis or outcome'},{k:'notes',l:'Notes',t:'area',ph:'Instructions, follow-up notes…'},{k:'followup',l:'Follow-up Date',t:'date'}],summary:e=>`${e.reason||'Visit'}${e.doctor?' — '+e.doctor:''}`},
+  immunizations:{label:'Immunization',fields:[{k:'date',l:'Date Given',t:'date',req:true},{k:'vaccine',l:'Vaccine Name',t:'text',req:true,ph:'DTaP, MMR, Flu, COVID…'},{k:'dose',l:'Dose / Series',t:'text',ph:'1st, 2nd, Booster…'},{k:'provider',l:'Given By',t:'text',ph:'Clinic or provider'},{k:'lot',l:'Lot Number',t:'text',ph:'Lot #'},{k:'site',l:'Injection Site',t:'text',ph:'Left arm, right thigh…'},{k:'reactions',l:'Reactions (if any)',t:'area',ph:'None, or describe…'}],summary:e=>`${e.vaccine||'Vaccine'}${e.dose?' — '+e.dose:''}`},
+  illnesses:{label:'Illness',fields:[{k:'date',l:'Start Date',t:'date',req:true},{k:'illness',l:'Illness',t:'text',req:true,ph:'RSV, ear infection, strep…'},{k:'symptoms',l:'Symptoms',t:'area',ph:'Fever, runny nose, cough…'},{k:'treatment',l:'Treatment',t:'area',ph:'Rest, Tylenol, antibiotics…'},{k:'resolved',l:'Resolved Date',t:'date'},{k:'notes',l:'Notes',t:'area',ph:'What worked, doctor advice…'}],summary:e=>e.illness||'Illness'},
+  medications:{label:'Medication',fields:[{k:'date',l:'Start Date',t:'date',req:true},{k:'name',l:'Medication',t:'text',req:true,ph:'Amoxicillin, Ibuprofen…'},{k:'dose',l:'Dosage',t:'text',ph:'5 mL, 250 mg…'},{k:'frequency',l:'Frequency',t:'text',ph:'Twice daily, every 6 hrs…'},{k:'reason',l:'Reason / Dx',t:'text',ph:'Ear infection, fever…'},{k:'prescriber',l:'Prescribed By',t:'text',ph:'Dr. Name'},{k:'endDate',l:'End Date',t:'date'},{k:'notes',l:'Notes / Side Effects',t:'area',ph:'Reactions, observations…'}],summary:e=>`${e.name||'Medication'}${e.dose?' — '+e.dose:''}`},
+  symptoms:{label:'Symptom / Treatment',fields:[{k:'date',l:'Date',t:'date',req:true},{k:'symptom',l:'Symptom',t:'text',req:true,ph:'Fever 101.5°F, rash, vomiting…'},{k:'severity',l:'Severity',t:'sel',opts:['Mild','Moderate','Severe']},{k:'treatment',l:'Treatment Given',t:'area',ph:'Tylenol 5 mL, cool compress…'},{k:'response',l:'Response',t:'text',ph:'Improved, no change, worsened…'},{k:'notes',l:'Notes',t:'area',ph:'Context, timing, pattern…'}],summary:e=>`${e.symptom||'Symptom'}${e.severity?' ('+e.severity+')':''}`},
+  allergies:{label:'Allergy',fields:[{k:'date',l:'Date Identified',t:'date'},{k:'allergen',l:'Allergen',t:'text',req:true,ph:'Peanuts, penicillin, latex…'},{k:'reaction',l:'Reaction',t:'text',ph:'Hives, anaphylaxis, rash…'},{k:'severity',l:'Severity',t:'sel',opts:['Mild','Moderate','Severe','Life-threatening']},{k:'treatment',l:'Treatment',t:'text',ph:'Benadryl, EpiPen required…'},{k:'notes',l:'Notes',t:'area',ph:'Additional context…'}],summary:e=>`${e.allergen||'Allergen'}${e.severity?' — '+e.severity:''}`},
+  growth:{label:'Growth Measurement',fields:[{k:'date',l:'Date',t:'date',req:true},{k:'weight',l:'Weight',t:'text',ph:'22 lbs 4 oz / 10.1 kg'},{k:'height',l:'Height / Length',t:'text',ph:'30 in / 76 cm'},{k:'head',l:'Head Circumference',t:'text',ph:'18 in / 46 cm'},{k:'percentile',l:'Percentiles (if noted)',t:'text',ph:'Wt: 60th, Ht: 75th'},{k:'notes',l:'Doctor Notes',t:'area',ph:'Growth curve comments…'}],summary:e=>`Wt: ${e.weight||'—'} · Ht: ${e.height||'—'}${e.percentile?' · '+e.percentile:''}`},
+  milestones:{label:'Milestone',fields:[{k:'date',l:'Date Achieved',t:'date',req:true},{k:'milestone',l:'Milestone',t:'text',req:true,ph:'First steps, first words…'},{k:'category',l:'Category',t:'sel',opts:['Motor — Gross','Motor — Fine','Language','Social / Emotional','Cognitive','Self-Care','Other']},{k:'age',l:'Age at Milestone',t:'text',ph:'8 months, 14 months…'},{k:'notes',l:'Notes / Story',t:'area',ph:'How it happened, who saw it…'}],summary:e=>`${e.milestone||'Milestone'}${e.category?' ('+e.category+')':''}`},
+  feeding:{label:'Feeding / Food',fields:[{k:'date',l:'Date',t:'date',req:true},{k:'type',l:'Feed Type',t:'sel',opts:['Breastfed','Formula','Solid Food','Puree / Baby Food','Mixed','Table Food','Other']},{k:'food',l:'Food / Details',t:'text',ph:'Oatmeal, banana, Similac…'},{k:'amount',l:'Amount / Duration',t:'text',ph:'4 oz, 12 min each side…'},{k:'reaction',l:'Reaction',t:'text',ph:'Loved it, refused, rash, gassy…'},{k:'new',l:'New Food Introduction?',t:'sel',opts:['No','Yes — first time','Yes — second time']},{k:'notes',l:'Notes',t:'area',ph:'Texture, timing, observations…'}],summary:e=>`${e.type||'Feed'}: ${e.food||''}${e.amount?' — '+e.amount:''}`},
+  sleep:{label:'Sleep Log',fields:[{k:'date',l:'Date',t:'date',req:true},{k:'bedtime',l:'Bedtime',t:'time'},{k:'wakeTime',l:'Wake Time',t:'time'},{k:'naps',l:'Nap Duration',t:'text',ph:'1 hr 30 min total'},{k:'quality',l:'Sleep Quality',t:'sel',opts:['Excellent','Good','Fair','Poor','Very Poor']},{k:'wakings',l:'Night Wakings',t:'text',ph:'0, 1, 2 times…'},{k:'notes',l:'Notes',t:'area',ph:'Teething, illness, regression…'}],summary:e=>`Bed: ${e.bedtime||'—'} · Wake: ${e.wakeTime||'—'}${e.quality?' ('+e.quality+')':''}`},
+  referrals:{label:'Specialist Referral',fields:[{k:'date',l:'Referral Date',t:'date',req:true},{k:'specialist',l:'Specialist Type',t:'text',req:true,ph:'Cardiologist, ENT, Neurologist…'},{k:'provider',l:'Referred To',t:'text',ph:'Dr. Name, Practice / Hospital'},{k:'phone',l:'Phone',t:'text',ph:'Office phone number'},{k:'reason',l:'Reason',t:'area',ph:'Symptoms or concern…'},{k:'apptDate',l:'Appointment Date',t:'date'},{k:'status',l:'Status',t:'sel',opts:['Pending','Scheduled','Seen','Completed','Cancelled']},{k:'notes',l:'Outcome / Notes',t:'area',ph:'Specialist findings, next steps…'}],summary:e=>`${e.specialist||'Specialist'}${e.status?' — '+e.status:''}`},
+  recommendations:{label:'Recommendation',fields:[{k:'date',l:'Date',t:'date',req:true},{k:'from',l:'Recommended By',t:'text',ph:'Dr. Name, Specialist'},{k:'recommendation',l:'Recommendation',t:'area',req:true,ph:'Increase iron, PT referral, humidifier…'},{k:'priority',l:'Priority',t:'sel',opts:['Routine','Important','Urgent']},{k:'status',l:'Status',t:'sel',opts:['Pending','In Progress','Done']},{k:'notes',l:'Notes / Progress',t:'area',ph:'What was done, outcome…'}],summary:e=>(e.recommendation||'Recommendation').slice(0,65)},
+  insurance:{label:'Insurance Info',fields:[{k:'date',l:'Effective Date',t:'date'},{k:'provider',l:'Insurance Co.',t:'text',req:true,ph:'Blue Cross, Aetna, United…'},{k:'plan',l:'Plan Name',t:'text',ph:'PPO Gold, HMO Silver…'},{k:'memberId',l:'Member ID',t:'text',ph:'Member ID #'},{k:'groupNo',l:'Group Number',t:'text',ph:'Group #'},{k:'phone',l:'Member Services Phone',t:'text',ph:'1-800-…'},{k:'copay',l:'Copay / Deductible',t:'text',ph:'$25 copay, $1,500 deductible…'},{k:'notes',l:'Notes',t:'area',ph:'Prior auth, coverage details…'}],summary:e=>`${e.provider||'Insurer'} — ${e.plan||''}${e.memberId?' · ID: '+e.memberId:''}`},
+  bills:{label:'Medical Bill',fields:[{k:'date',l:'Bill Date',t:'date',req:true},{k:'provider',l:'Provider / Facility',t:'text',req:true,ph:"Children's Hospital, Dr. Smith…"},{k:'service',l:'Service / Visit',t:'text',ph:'Well visit, ER, lab…'},{k:'amount',l:'Total Billed',t:'text',ph:'$1,200.00'},{k:'insurance',l:'Insurance Paid',t:'text',ph:'$950.00'},{k:'owed',l:'Amount Owed by You',t:'text',ph:'$250.00'},{k:'dueDate',l:'Due Date',t:'date'},{k:'status',l:'Status',t:'sel',opts:['Unpaid','Pending Insurance','Partial','Paid','Disputed']},{k:'notes',l:'Notes',t:'area',ph:'EOB details, payment plan…'}],summary:e=>`${e.provider||'Provider'} — Owed: ${e.owed||e.amount||'—'} (${e.status||'Unpaid'})`},
+  emergency:{label:'Emergency Info',fields:[{k:'type',l:'Info Type',t:'sel',opts:['Emergency Contact','Pharmacy','Preferred Hospital','Specialist Contact','Special Medical Needs','Other']},{k:'name',l:'Name / Title',t:'text',req:true,ph:'Grandma Jane, CVS Pharmacy…'},{k:'phone',l:'Phone',t:'text',ph:'555-867-5309'},{k:'address',l:'Address',t:'text',ph:'Street, City, State'},{k:'relation',l:'Relationship / Role',t:'text',ph:'Maternal grandmother…'},{k:'notes',l:'Important Details',t:'area',ph:'Hours, special instructions…'},{k:'date',l:'Date Added',t:'date'}],summary:e=>`${e.type||'Info'}: ${e.name||'—'}${e.phone?' · '+e.phone:''}`}
+};
+
+const QUICK=['visits','immunizations','medications','illnesses','milestones','symptoms','growth','feeding'];
+const QLABELS={visits:'Dr Visit',immunizations:'Vaccine',medications:'Med',illnesses:'Illness',milestones:'Milestone',symptoms:'Symptom',growth:'Growth',feeding:'Feeding'};
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function goTab(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if(id==='home')renderHome();
+  if(id==='settings')loadProfile();
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════
+//  FORM
+// ══════════════════════════════════════════
+let activeCat=null;
+
+function openAdd(cat){
+  activeCat=cat;
+  const cfg=C[cat];
+  document.getElementById('sheet-title').innerHTML=
+    `<div class="sheet-icon">${ICONS[cat]}</div>${cfg.label}`;
+  document.getElementById('sheet-body').innerHTML=buildForm(cfg.fields);
+  const d=document.getElementById('f-date');
+  if(d&&!d.value)d.value=today();
+  document.getElementById('add-overlay').classList.add('open');
+}
+
+function buildForm(fields){
+  let h='';
+  for(const f of fields){
+    h+=`<div class="fg"><label for="f-${f.k}">${f.l}${f.req?` <span style="color:var(--primary)">*</span>`:''}</label>`;
+    if(f.t==='area') h+=`<textarea id="f-${f.k}" placeholder="${f.ph||''}"></textarea>`;
+    else if(f.t==='sel') h+=`<select id="f-${f.k}"><option value="">Select…</option>${(f.opts||[]).map(o=>`<option>${o}</option>`).join('')}</select>`;
+    else h+=`<input type="${f.t||'text'}" id="f-${f.k}" placeholder="${f.ph||''}">`;
+    h+='</div>';
+  }
+  return h+`<button class="submit-btn" onclick="submitEntry()">Save Entry</button>`;
+}
+
+function submitEntry(){
+  const cfg=C[activeCat];
+  const entry={id:Date.now(),_ts:new Date().toISOString()};
+  let ok=true;
+  for(const f of cfg.fields){
+    const el=document.getElementById('f-'+f.k);
+    if(!el)continue;
+    if(f.req&&!el.value.trim()){el.style.borderColor='var(--primary)';ok=false;continue}
+    el.style.borderColor='';
+    entry[f.k]=el.value;
+  }
+  if(!ok)return;
+  D[activeCat].unshift(entry);
+  save();
+  document.getElementById('add-overlay').classList.remove('open');
+  activeCat=null;
+  renderAll();
+}
+
+function closeOverlay(e,id){if(e.target.classList.contains('overlay'))document.getElementById(id).classList.remove('open')}
+function openExportSheet(){document.getElementById('export-overlay').classList.add('open')}
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+function fmt(d){if(!d)return'';try{return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch{return d}}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderCard(cat,e){
+  const cfg=C[cat];
+  const note=e.notes||e.symptoms||e.treatment||e.reaction||e.recommendation||'';
+  return`<div class="card"><div class="card-row"><div class="card-icon">${ICONS[cat]}</div><div class="card-body"><div class="card-title">${esc(cfg.summary(e))}</div><div class="card-date">${fmt(e.date||e._ts)}</div>${note?`<div class="card-note">${esc(note)}</div>`:''}</div><button class="card-del" onclick="del('${cat}',${e.id})" title="Delete">×</button></div></div>`;
+}
+
+function renderList(cat){
+  const el=document.getElementById('list-'+cat);
+  if(!el)return;
+  const items=D[cat]||[];
+  el.innerHTML=items.length
+    ?items.map(e=>renderCard(cat,e)).join('')
+    :`<div class="empty"><div class="empty-icon">${ICONS[cat]}</div><div class="empty-txt">No ${C[cat].label.toLowerCase()}s logged yet.</div></div>`;
+}
+
+function renderHome(){
+  document.getElementById('stat-visits').textContent=D.visits.length;
+  document.getElementById('stat-vaccines').textContent=D.immunizations.length;
+  document.getElementById('stat-meds').textContent=D.medications.length;
+  document.getElementById('stat-milestones').textContent=D.milestones.length;
+  const p=D.profile;
+  if(p.name){
+    document.getElementById('hero-name').textContent=p.name;
+    document.getElementById('hero-emoji').textContent='👧';
+    let meta='';
+    if(p.dob)meta=getAge(p.dob);
+    if(p.blood)meta+=(meta?' · ':'')+p.blood+' blood type';
+    if(p.peds)meta+=(meta?' · ':'')+p.peds;
+    document.getElementById('hero-meta').textContent=meta||'Your child';
+  }
+  const qg=document.getElementById('quick-grid');
+  qg.innerHTML=QUICK.map(cat=>`<div class="qitem" onclick="openAdd('${cat}')"><div class="qitem-icon">${ICONS[cat]}</div><div class="qitem-lbl">${QLABELS[cat]}</div></div>`).join('');
+  const all=[];
+  Object.keys(C).forEach(cat=>(D[cat]||[]).forEach(e=>all.push({cat,e,ts:e.date||e._ts||''})));
+  all.sort((a,b)=>b.ts.localeCompare(a.ts));
+  const recent=all.slice(0,12);
+  const el=document.getElementById('recent-list');
+  if(!recent.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">${ICONS.milestones}</div><div class="empty-txt">Tap any button above to log your first entry!</div></div>`;
+    return;
+  }
+  el.innerHTML=`<div class="timeline">${recent.map(({cat,e})=>`<div class="tl-item"><div class="tl-dot">${ICONS[cat]}</div><div class="tl-body"><div class="tl-title">${esc(C[cat].summary(e))}</div><div class="tl-cat">${C[cat].label} · ${fmt(e.date||e._ts)}</div></div></div>`).join('')}</div>`;
+}
+
+function renderAll(){Object.keys(C).forEach(renderList);renderHome()}
+
+// ══════════════════════════════════════════
+//  DELETE
+// ══════════════════════════════════════════
+function del(cat,id){
+  if(!confirm('Delete this entry? This cannot be undone.'))return;
+  D[cat]=D[cat].filter(e=>e.id!==id);
+  save();renderAll();
+}
+
+// ══════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════
+function loadProfile(){
+  const p=D.profile;
+  document.getElementById('s-name').value=p.name||'';
+  document.getElementById('s-dob').value=p.dob||'';
+  document.getElementById('s-blood').value=p.blood||'';
+  document.getElementById('s-peds').value=p.peds||'';
+  document.getElementById('s-hospital').value=p.hospital||'';
+}
+function saveProfile(){
+  D.profile={
+    name:document.getElementById('s-name').value,
+    dob:document.getElementById('s-dob').value,
+    blood:document.getElementById('s-blood').value,
+    peds:document.getElementById('s-peds').value,
+    hospital:document.getElementById('s-hospital').value
+  };
+  save();renderHome();
+}
+
+// ══════════════════════════════════════════
+//  IMPORT / SYNC
+// ══════════════════════════════════════════
+function triggerImport(){
+  // Try both possible inputs
+  const inp=document.getElementById('import-input2')||document.getElementById('import-input');
+  if(inp)inp.click();
+}
+
+function handleImport(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const imported=JSON.parse(ev.target.result);
+      let added=0;
+      Object.keys(C).forEach(cat=>{
+        if(!imported[cat]||!Array.isArray(imported[cat]))return;
+        const existingIds=new Set((D[cat]||[]).map(x=>x.id));
+        const newEntries=imported[cat].filter(x=>!existingIds.has(x.id));
+        added+=newEntries.length;
+        D[cat]=[...(D[cat]||[]),...newEntries];
+        D[cat].sort((a,b)=>(b.date||b._ts||'').localeCompare(a.date||a._ts||''));
+      });
+      // Import profile only if current one is empty
+      if(!D.profile.name&&imported.profile?.name)D.profile=imported.profile;
+      save();renderAll();loadProfile();
+      document.getElementById('export-overlay').classList.remove('open');
+      alert('Import complete!\n\n'+added+' new entr'+(added===1?'y':'ies')+' added from the other device.\n\nYour existing entries were not changed.');
+    }catch(err){
+      alert('Could not read this file.\n\nMake sure it is a valid Little Health JSON backup (.json).');
+    }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════════
+function exportJSON(){
+  dl(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),'little-health-backup-'+today()+'.json');
+}
+function exportCSV(){
+  let out='Little Health — Child Medical Records\n'+today()+'\n';
+  Object.keys(C).forEach(cat=>{
+    const items=D[cat];
+    if(!items.length)return;
+    out+='\n\n# '+C[cat].label.toUpperCase()+'S\n';
+    const keys=C[cat].fields.map(f=>f.k);
+    const labels=C[cat].fields.map(f=>f.l);
+    out+=labels.map(l=>'"'+l+'"').join(',')+'\n';
+    items.forEach(e=>{out+=keys.map(k=>'"'+(e[k]||'').replace(/"/g,'""')+'"').join(',')+'\n'});
+  });
+  dl(new Blob([out],{type:'text/csv'}),'little-health-'+today()+'.csv');
+}
+function dl(blob,name){
+  const u=URL.createObjectURL(blob);
+  const a=Object.assign(document.createElement('a'),{href:u,download:name});
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function today(){return new Date().toISOString().split('T')[0]}
+function getAge(dob){
+  const b=new Date(dob),n=new Date();
+  let y=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();
+  if(m<0){y--;m+=12}
+  if(y===0)return m+' month'+(m!==1?'s':'')+' old';
+  if(y<2)return y+' yr '+m+' mo old';
+  return y+' years old';
+}
+function clearAll(){
+  if(!confirm('Delete ALL data permanently?\n\nExport a backup first — this cannot be undone.'))return;
+  D=fresh();save();renderAll();alert('All data cleared.');
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+renderAll();
+loadProfile();
+</script>
+</body>
+</html>

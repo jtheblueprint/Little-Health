@@ -10,6 +10,8 @@
   <meta name="theme-color" content="#0E1514" media="(prefers-color-scheme: dark)">
   <meta name="color-scheme" content="light dark">
   <title>Little Health — Child Medical Tracker</title>
+  <link rel="apple-touch-icon" id="app-icon" href="data:image/png;base64,">
+  <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -92,6 +94,31 @@
     .hero-insight-lbl{font-size:9px;opacity:.6;margin-top:2px}
     .hero-sparkline{margin-top:14px;background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px}
     .hero-spark-title{font-size:9px;opacity:.6;letter-spacing:.3px;text-transform:uppercase;margin-bottom:6px}
+    .hero-edit{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:background .12s;-webkit-tap-highlight-color:transparent}
+    .hero-edit:active{background:rgba(255,255,255,.3)}
+    .hero-edit svg{width:15px;height:15px}
+    .hero-widget{margin-top:14px;background:rgba(255,255,255,.1);border-radius:12px;padding:14px 14px;min-height:52px}
+    .hero-widget-title{font-size:9px;opacity:.55;letter-spacing:.3px;text-transform:uppercase;margin-bottom:6px}
+    .hero-widget-val{font-size:18px;font-weight:700;line-height:1.2}
+    .hero-widget-sub{font-size:11px;opacity:.7;margin-top:3px}
+    .hero-widget-row{display:flex;align-items:center;gap:10px}
+    .hero-widget-icon{font-size:20px;flex-shrink:0}
+    /* Hero customize sheet */
+    .hero-cfg-section{margin-bottom:18px}
+    .hero-cfg-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+    .hero-cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .hero-cfg-opt{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .12s;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);font-weight:500}
+    .hero-cfg-opt:active{transform:scale(.97)}
+    .hero-cfg-opt.selected{border-color:var(--primary);background:var(--primary-light)}
+    .hero-cfg-opt.disabled{opacity:.4;pointer-events:none}
+    .hero-cfg-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;font-size:11px}
+    .hero-cfg-opt.selected .hero-cfg-check{background:var(--primary);border-color:var(--primary);color:white}
+    .hero-cfg-opt.selected .hero-cfg-check::after{content:'✓'}
+    .hero-cfg-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s}
+    .hero-cfg-opt.selected .hero-cfg-radio{border-color:var(--primary)}
+    .hero-cfg-opt.selected .hero-cfg-radio::after{content:'';width:10px;height:10px;border-radius:50%;background:var(--primary)}
+    .hero-cfg-widgets{display:flex;flex-direction:column;gap:6px}
+    .hero-cfg-widgets .hero-cfg-opt{padding:12px}
     .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px}
     .qitem{display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 4px 9px;background:var(--card);border-radius:12px;border:1.5px solid var(--border);cursor:pointer;box-shadow:0 2px 8px var(--shadow);transition:transform .12s,box-shadow .12s}
     .qitem:active{transform:scale(.92);box-shadow:0 1px 3px var(--shadow)}
@@ -322,18 +349,14 @@
 <main class="main">
   <div class="view active" id="view-home">
     <div class="hero">
+      <button class="hero-edit" onclick="openHeroCfg()" title="Customize dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
       <div class="hero-top">
         <div class="hero-photo" id="hero-photo-wrap" onclick="uploadPhoto()"><span class="hero-photo-placeholder" id="hero-photo-placeholder">👶</span></div>
         <div class="hero-info"><div class="hero-name" id="hero-name">Your Child</div><div class="hero-meta" id="hero-meta">Set up profile in Settings →</div></div>
       </div>
-      <div class="hero-stats">
-        <div class="hero-stat" onclick="goTab('records');scrollToCat('visits')"><div class="hero-stat-val" id="stat-visits">0</div><div class="hero-stat-lbl">Visits</div></div>
-        <div class="hero-stat" onclick="goTab('health');scrollToCat('immunizations')"><div class="hero-stat-val" id="stat-vaccines">0</div><div class="hero-stat-lbl">Vaccines</div></div>
-        <div class="hero-stat" onclick="goTab('health');scrollToCat('medications')"><div class="hero-stat-val" id="stat-meds">0</div><div class="hero-stat-lbl">Meds</div></div>
-        <div class="hero-stat" onclick="goTab('growth');scrollToCat('milestones')"><div class="hero-stat-val" id="stat-milestones">0</div><div class="hero-stat-lbl">Milestones</div></div>
-      </div>
+      <div class="hero-stats" id="hero-stats-grid"></div>
       <div class="hero-divider"></div>
-      <div class="hero-insights" id="hero-insights"></div>
+      <div class="hero-widget" id="hero-widget"></div>
       <div class="hero-sparkline" id="hero-sparkline"></div>
     </div>
     <div id="backup-banner-slot"></div>
@@ -410,7 +433,7 @@
 <nav class="tabbar">
   <div class="tab active" id="tab-home" onclick="goTab('home')"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H15v-5H9v5H4a1 1 0 01-1-1z"/></svg></div><div class="tab-lbl">Home</div></div>
   <div class="tab" id="tab-health" onclick="goTab('health')"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 000-7.8z"/></svg></div><div class="tab-lbl">Health</div></div>
-  <div class="tab" id="tab-growth" onclick="goTab('growth')"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20c0 0 0-8 0-12C11 4 17 2 21 3c1 4-1 10-5 10-1.5 0-3-.5-4-1.5"/><path d="M11 8c-2 0-4 1.5-5 4-1 2.5-.5 5 1 6.5"/><path d="M14.5 6.5c-1.5 2-2.5 4-3.5 7"/></svg></div><div class="tab-lbl">Growth</div></div>
+  <div class="tab" id="tab-growth" onclick="goTab('growth')"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-12"/><path d="M12 10C12 5 7 2 4 3c0 4 3 7 8 7z"/><path d="M12 14C12 9 17 6 20 7c0 4-3 7-8 7z"/><path d="M6 5.5c2 1.5 4 3 6 4.5"/><path d="M18 9.5c-2 1.5-4 3-6 4.5"/></svg></div><div class="tab-lbl">Growth</div></div>
   <div class="tab" id="tab-records" onclick="goTab('records')"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div class="tab-lbl">Records</div></div>
   <div class="tab" id="tab-settings" onclick="goTab('settings')"><div class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div><div class="tab-lbl">Settings</div></div>
 </nav>
@@ -426,6 +449,16 @@
     <p class="helper" style="margin-bottom:12px">Choose up to 12 categories for your home screen shortcuts.</p>
     <div id="grid-picks"></div>
     <button class="submit-btn" style="margin-top:14px" onclick="saveGridPicks()">Done</button>
+  </div>
+</div>
+
+<!-- HERO CUSTOMIZE -->
+<div class="overlay" id="hero-cfg-overlay" onclick="closeOverlay(event,'hero-cfg-overlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Customize Dashboard</div>
+    <div id="hero-cfg-body"></div>
+    <button class="submit-btn" style="margin-top:14px" onclick="saveHeroCfg()">Done</button>
   </div>
 </div>
 
@@ -663,16 +696,48 @@ function renderList(cat){
     :'<div class="empty"><div class="empty-icon">'+ICONS[cat]+'</div><div class="empty-txt">No '+C[cat].label.toLowerCase()+'s'+(yf&&yf!=='all'?' in '+yf:'')+' yet.</div></div>');
 }
 function setYearFilter(cat,year){yearFilters[cat]=year;renderList(cat)}
+// ══════════════════════════════════════════
+//  HERO PREFERENCES (persisted)
+// ══════════════════════════════════════════
+const HERO_STAT_OPTIONS={
+  visits:{label:'Visits',get:()=>D.visits.length,tab:'records',cat:'visits'},
+  immunizations:{label:'Vaccines',get:()=>D.immunizations.length,tab:'health',cat:'immunizations'},
+  medications:{label:'Meds',get:()=>D.medications.length,tab:'health',cat:'medications'},
+  milestones:{label:'Milestones',get:()=>D.milestones.length,tab:'growth',cat:'milestones'},
+  illnesses:{label:'Illnesses',get:()=>D.illnesses.length,tab:'health',cat:'illnesses'},
+  symptoms:{label:'Symptoms',get:()=>D.symptoms.length,tab:'health',cat:'symptoms'},
+  allergies:{label:'Allergies',get:()=>D.allergies.length,tab:'health',cat:'allergies'},
+  labs:{label:'Labs',get:()=>D.labs.length,tab:'health',cat:'labs'},
+  growth:{label:'Growth',get:()=>D.growth.length,tab:'growth',cat:'growth'},
+  appointments:{label:'Appts',get:()=>D.appointments.length,tab:'records',cat:'appointments'},
+  insurance:{label:'Insurance',get:()=>D.insurance.length,tab:'records',cat:'insurance'},
+  bills:{label:'Bills',get:()=>D.bills.length,tab:'records',cat:'bills'},
+  emergency:{label:'Emergency',get:()=>D.emergency.length,tab:'records',cat:'emergency'}
+};
+const HERO_WIDGET_OPTIONS={
+  days_well:{label:'Days Well',icon:'✨',desc:'Days since last illness'},
+  next_appt:{label:'Next Appointment',icon:'📅',desc:'Upcoming scheduled visit'},
+  active_meds:{label:'Active Medications',icon:'💊',desc:'Currently prescribed meds'},
+  latest_growth:{label:'Latest Growth',icon:'📏',desc:'Most recent measurement'},
+  last_feeding:{label:'Last Feeding',icon:'🍼',desc:'Most recent feeding entry'},
+  sleep_summary:{label:'Last Sleep',icon:'🌙',desc:'Most recent sleep log'}
+};
+
+function getHeroPrefs(){
+  try{const s=localStorage.getItem('lh_hero');if(s)return JSON.parse(s)}catch{}
+  return{statCards:['visits','immunizations','medications','milestones'],activeWidget:'days_well'};
+}
+function saveHeroPrefs(prefs){localStorage.setItem('lh_hero',JSON.stringify(prefs))}
+
+let heroCfgState=null; // temp state while editing
+
 function renderHome(){
-  // Restore home calendar visibility
   const hcEl=document.getElementById('home-calendar');
   const hcBtn=document.getElementById('home-cal-toggle');
   if(hcEl)hcEl.style.display=homeCalVisible?'block':'none';
   if(hcBtn)hcBtn.textContent=homeCalVisible?'Hide':'Show';
-  document.getElementById('stat-visits').textContent=D.visits.length;
-  document.getElementById('stat-vaccines').textContent=D.immunizations.length;
-  document.getElementById('stat-meds').textContent=D.medications.length;
-  document.getElementById('stat-milestones').textContent=D.milestones.length;
+
+  const prefs=getHeroPrefs();
   const p=D.profile;
   const pw=document.getElementById('hero-photo-wrap');
   pw.innerHTML=p.photo?'<img src="'+p.photo+'" alt="">':'<span class="hero-photo-placeholder">'+(p.name?'👧':'👶')+'</span>';
@@ -681,37 +746,83 @@ function renderHome(){
     let meta='';if(p.dob)meta=getAge(p.dob);if(p.blood)meta+=(meta?' · ':'')+p.blood;if(p.peds)meta+=(meta?' · ':'')+p.peds;
     document.getElementById('hero-meta').textContent=meta||'Your child';
   }
-  // Hero insights
-  const insEl=document.getElementById('hero-insights');
-  if(insEl){
-    let ins='';
-    // Days since last illness
-    const lastIll=(D.illnesses||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
-    if(lastIll&&lastIll.resolved){
-      const days=Math.floor((Date.now()-new Date(lastIll.resolved+'T12:00:00').getTime())/86400000);
-      ins+='<div class="hero-insight" onclick="goTab(\'health\');scrollToCat(\'illnesses\')"><div class="hero-insight-icon">✨</div><div class="hero-insight-text"><div class="hero-insight-val">'+days+' days well</div><div class="hero-insight-lbl">Since last illness</div></div></div>';
-    } else if(lastIll){
-      ins+='<div class="hero-insight" onclick="goTab(\'health\');scrollToCat(\'illnesses\')"><div class="hero-insight-icon">🤒</div><div class="hero-insight-text"><div class="hero-insight-val">'+esc(lastIll.illness||'Active')+'</div><div class="hero-insight-lbl">Current illness</div></div></div>';
-    }
-    // Next appointment
-    const upcoming=(D.appointments||[]).filter(a=>a.date>=today()&&(!a.status||a.status==='Scheduled')).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-    if(upcoming.length){
-      const next=upcoming[0];
-      ins+='<div class="hero-insight" onclick="goTab(\'records\');scrollToCat(\'appointments\')"><div class="hero-insight-icon">📅</div><div class="hero-insight-text"><div class="hero-insight-val">'+fmt(next.date)+'</div><div class="hero-insight-lbl">'+(next.type||'Appointment')+'</div></div></div>';
-    }
-    // Active medications
-    const activeMeds=(D.medications||[]).filter(m=>!m.endDate||m.endDate>=today());
-    if(activeMeds.length){
-      ins+='<div class="hero-insight" onclick="goTab(\'health\');scrollToCat(\'medications\')"><div class="hero-insight-icon">💊</div><div class="hero-insight-text"><div class="hero-insight-val">'+activeMeds.length+' active</div><div class="hero-insight-lbl">Medication'+(activeMeds.length>1?'s':'')+'</div></div></div>';
-    }
-    // Latest growth
-    const lastGrowth=(D.growth||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
-    if(lastGrowth){
-      ins+='<div class="hero-insight" onclick="goTab(\'growth\');scrollToCat(\'growth\')"><div class="hero-insight-icon">📏</div><div class="hero-insight-text"><div class="hero-insight-val">'+(lastGrowth.weight||lastGrowth.height||'Recorded')+'</div><div class="hero-insight-lbl">Last measured '+fmt(lastGrowth.date)+'</div></div></div>';
-    }
-    insEl.innerHTML=ins;
-    insEl.style.display=ins?'grid':'none';
+
+  // Dynamic stat cards
+  const statsEl=document.getElementById('hero-stats-grid');
+  if(statsEl){
+    statsEl.innerHTML=prefs.statCards.map(key=>{
+      const opt=HERO_STAT_OPTIONS[key];if(!opt)return'';
+      return'<div class="hero-stat" onclick="goTab(\''+opt.tab+'\');scrollToCat(\''+opt.cat+'\')"><div class="hero-stat-val">'+opt.get()+'</div><div class="hero-stat-lbl">'+opt.label+'</div></div>';
+    }).join('');
   }
+
+  // Dynamic widget
+  const widgetEl=document.getElementById('hero-widget');
+  if(widgetEl){
+    let wh='';
+    switch(prefs.activeWidget){
+      case 'days_well':{
+        const lastIll=(D.illnesses||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+        if(lastIll&&lastIll.resolved){
+          const days=Math.floor((Date.now()-new Date(lastIll.resolved+'T12:00:00').getTime())/86400000);
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">✨</div><div><div class="hero-widget-val">'+days+' days well</div><div class="hero-widget-sub">Since last illness</div></div></div>';
+        } else if(lastIll&&!lastIll.resolved){
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">🤒</div><div><div class="hero-widget-val">'+esc(lastIll.illness||'Active illness')+'</div><div class="hero-widget-sub">Started '+fmt(lastIll.date)+'</div></div></div>';
+        } else {
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">✨</div><div><div class="hero-widget-val">All clear</div><div class="hero-widget-sub">No illnesses recorded</div></div></div>';
+        }
+        break;
+      }
+      case 'next_appt':{
+        const upcoming=(D.appointments||[]).filter(a=>a.date>=today()&&(!a.status||a.status==='Scheduled')).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+        if(upcoming.length){
+          const n=upcoming[0];const daysUntil=Math.ceil((new Date(n.date+'T12:00:00').getTime()-Date.now())/86400000);
+          wh='<div class="hero-widget-row" onclick="goTab(\'records\');scrollToCat(\'appointments\')"><div class="hero-widget-icon">📅</div><div><div class="hero-widget-val">'+fmt(n.date)+(n.time?' at '+n.time:'')+'</div><div class="hero-widget-sub">'+(n.type||'Appointment')+(n.doctor?' — '+n.doctor:'')+' · '+(daysUntil<=0?'Today':daysUntil===1?'Tomorrow':'In '+daysUntil+' days')+'</div></div></div>';
+        } else {
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">📅</div><div><div class="hero-widget-val">No upcoming</div><div class="hero-widget-sub">No appointments scheduled</div></div></div>';
+        }
+        break;
+      }
+      case 'active_meds':{
+        const active=(D.medications||[]).filter(m=>!m.endDate||m.endDate>=today());
+        if(active.length){
+          wh='<div class="hero-widget-row" onclick="goTab(\'health\');scrollToCat(\'medications\')"><div class="hero-widget-icon">💊</div><div><div class="hero-widget-val">'+active.length+' active medication'+(active.length>1?'s':'')+'</div><div class="hero-widget-sub">'+active.map(m=>m.name||'Medication').join(', ')+'</div></div></div>';
+        } else {
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">💊</div><div><div class="hero-widget-val">None active</div><div class="hero-widget-sub">No current medications</div></div></div>';
+        }
+        break;
+      }
+      case 'latest_growth':{
+        const lg=(D.growth||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+        if(lg){
+          wh='<div class="hero-widget-row" onclick="goTab(\'growth\');scrollToCat(\'growth\')"><div class="hero-widget-icon">📏</div><div><div class="hero-widget-val">'+(lg.weight?lg.weight:'')+(lg.weight&&lg.height?' · ':'')+(lg.height?lg.height:'')+'</div><div class="hero-widget-sub">Measured '+fmt(lg.date)+(lg.percentile?' · '+lg.percentile:'')+'</div></div></div>';
+        } else {
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">📏</div><div><div class="hero-widget-val">No data yet</div><div class="hero-widget-sub">Add a growth measurement</div></div></div>';
+        }
+        break;
+      }
+      case 'last_feeding':{
+        const lf=(D.feeding||[]).sort((a,b)=>(b.date||b._ts||'').localeCompare(a.date||a._ts||''))[0];
+        if(lf){
+          wh='<div class="hero-widget-row" onclick="goTab(\'growth\');scrollToCat(\'feeding\')"><div class="hero-widget-icon">🍼</div><div><div class="hero-widget-val">'+(lf.type||'Feed')+(lf.food?' — '+lf.food:'')+'</div><div class="hero-widget-sub">'+fmt(lf.date)+(lf.amount?' · '+lf.amount:'')+'</div></div></div>';
+        } else {
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">🍼</div><div><div class="hero-widget-val">No data yet</div><div class="hero-widget-sub">Log a feeding entry</div></div></div>';
+        }
+        break;
+      }
+      case 'sleep_summary':{
+        const ls=(D.sleep||[]).sort((a,b)=>(b.date||b._ts||'').localeCompare(a.date||a._ts||''))[0];
+        if(ls){
+          wh='<div class="hero-widget-row" onclick="goTab(\'growth\');scrollToCat(\'sleep\')"><div class="hero-widget-icon">🌙</div><div><div class="hero-widget-val">Bed '+(ls.bedtime||'—')+' · Wake '+(ls.wakeTime||'—')+'</div><div class="hero-widget-sub">'+fmt(ls.date)+(ls.quality?' · '+ls.quality:'')+(ls.wakings?' · '+ls.wakings+' wakings':'')+'</div></div></div>';
+        } else {
+          wh='<div class="hero-widget-row"><div class="hero-widget-icon">🌙</div><div><div class="hero-widget-val">No data yet</div><div class="hero-widget-sub">Log a sleep entry</div></div></div>';
+        }
+        break;
+      }
+    }
+    widgetEl.innerHTML=wh;
+  }
+
   // Sparkline: 30-day health activity mini-viz
   const sparkEl=document.getElementById('hero-sparkline');
   if(sparkEl){
@@ -1088,6 +1199,59 @@ function saveGridPicks(){
   if(!picks.length){alert('Select at least one category.');return}
   saveQuickItems(picks);
   document.getElementById('grid-overlay').classList.remove('open');
+  renderHome();
+}
+
+// ══════════════════════════════════════════
+//  HERO CUSTOMIZE SHEET
+// ══════════════════════════════════════════
+function openHeroCfg(){
+  const prefs=getHeroPrefs();
+  heroCfgState={statCards:[...prefs.statCards],activeWidget:prefs.activeWidget};
+  renderHeroCfgBody();
+  document.getElementById('hero-cfg-overlay').classList.add('open');
+}
+
+function renderHeroCfgBody(){
+  const s=heroCfgState;
+  let h='<div class="hero-cfg-section"><div class="hero-cfg-label">Stat Cards (choose 4)</div><div class="hero-cfg-grid">';
+  Object.keys(HERO_STAT_OPTIONS).forEach(key=>{
+    const opt=HERO_STAT_OPTIONS[key];
+    const selected=s.statCards.includes(key);
+    const full=s.statCards.length>=4&&!selected;
+    h+='<div class="hero-cfg-opt'+(selected?' selected':'')+(full?' disabled':'')+'" onclick="toggleHeroStat(\''+key+'\')">';
+    h+='<div class="hero-cfg-check"></div>'+opt.label+'</div>';
+  });
+  h+='</div></div>';
+  h+='<div class="hero-cfg-section"><div class="hero-cfg-label">Dashboard Widget</div><div class="hero-cfg-widgets">';
+  Object.keys(HERO_WIDGET_OPTIONS).forEach(key=>{
+    const opt=HERO_WIDGET_OPTIONS[key];
+    const selected=s.activeWidget===key;
+    h+='<div class="hero-cfg-opt'+(selected?' selected':'')+'" onclick="selectHeroWidget(\''+key+'\')">';
+    h+='<div class="hero-cfg-radio"></div><span>'+opt.icon+' '+opt.label+'</span></div>';
+  });
+  h+='</div></div>';
+  document.getElementById('hero-cfg-body').innerHTML=h;
+}
+
+function toggleHeroStat(key){
+  const s=heroCfgState;
+  const idx=s.statCards.indexOf(key);
+  if(idx>=0){if(s.statCards.length<=1)return;s.statCards.splice(idx,1)}
+  else{if(s.statCards.length>=4)return;s.statCards.push(key)}
+  renderHeroCfgBody();
+}
+
+function selectHeroWidget(key){
+  heroCfgState.activeWidget=key;
+  renderHeroCfgBody();
+}
+
+function saveHeroCfg(){
+  if(!heroCfgState||heroCfgState.statCards.length<1)return;
+  saveHeroPrefs(heroCfgState);
+  document.getElementById('hero-cfg-overlay').classList.remove('open');
+  heroCfgState=null;
   renderHome();
 }
 
@@ -1503,6 +1667,55 @@ buildPinPad();
 if(hasPinSet()){showLockScreen('unlock')}
 else{appUnlocked=true;renderAll();renderProfileCard()}
 renderSecuritySettings();checkBackupReminder();
+
+// ══════════════════════════════════════════
+//  APP ICON (canvas-generated apple-touch-icon)
+// ══════════════════════════════════════════
+(function generateAppIcon(){
+  try{
+    const s=180;const c=document.createElement('canvas');c.width=s;c.height=s;
+    const ctx=c.getContext('2d');
+    // Gradient background
+    const g=ctx.createLinearGradient(0,0,s,s);
+    g.addColorStop(0,'#2D9E80');g.addColorStop(1,'#3B8DB8');
+    ctx.fillStyle=g;
+    // Rounded rect (iOS clips to squircle anyway, but fill the full canvas)
+    ctx.beginPath();ctx.arc(24,24,24,Math.PI,1.5*Math.PI);ctx.arc(s-24,24,24,1.5*Math.PI,0);
+    ctx.arc(s-24,s-24,24,0,0.5*Math.PI);ctx.arc(24,s-24,24,0.5*Math.PI,Math.PI);ctx.fill();
+    // Subtle light circle overlay
+    ctx.fillStyle='rgba(255,255,255,0.06)';
+    ctx.beginPath();ctx.arc(s*0.78,s*0.18,s*0.35,0,Math.PI*2);ctx.fill();
+    // Draw the double-leaf icon centered
+    ctx.save();ctx.translate(s/2,s/2-4);ctx.scale(4.5,4.5);
+    ctx.strokeStyle='white';ctx.lineWidth=1.6/4.5*2;ctx.lineCap='round';ctx.lineJoin='round';
+    // Stem
+    ctx.beginPath();ctx.moveTo(0,10);ctx.lineTo(0,-2);ctx.stroke();
+    // Left leaf
+    ctx.beginPath();ctx.moveTo(0,-2);
+    ctx.bezierCurveTo(-2,-5,-6,-7,-8,-6);
+    ctx.bezierCurveTo(-8,-3,-5,0,0,-2);ctx.closePath();
+    ctx.fillStyle='rgba(255,255,255,0.15)';ctx.fill();ctx.stroke();
+    // Right leaf
+    ctx.beginPath();ctx.moveTo(0,2);
+    ctx.bezierCurveTo(2,-1,6,-3,8,-2);
+    ctx.bezierCurveTo(8,1,5,4,0,2);ctx.closePath();
+    ctx.fill();ctx.stroke();
+    // Left vein
+    ctx.beginPath();ctx.moveTo(-6,-5.5);ctx.bezierCurveTo(-4,-3.5,-2,-2,0,-2);ctx.stroke();
+    // Right vein
+    ctx.beginPath();ctx.moveTo(6,-1.5);ctx.bezierCurveTo(4,0,2,1.5,0,2);ctx.stroke();
+    ctx.restore();
+    // Set as icon
+    const url=c.toDataURL('image/png');
+    const link=document.getElementById('app-icon');
+    if(link)link.href=url;
+    // Also add sizes variants
+    ['180x180','152x152','120x120'].forEach(sz=>{
+      const l2=document.createElement('link');l2.rel='apple-touch-icon';l2.sizes=sz;l2.href=url;
+      document.head.appendChild(l2);
+    });
+  }catch(e){console.log('Icon gen skipped',e)}
+})();
 </script>
 </body>
 </html>
